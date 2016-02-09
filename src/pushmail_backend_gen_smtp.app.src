@@ -1,0 +1,17 @@
+{application, 'pushmail_backend_gen_smtp',
+ [{description, "A plugin for PushMail to send the email with gen_smtp."},
+  {vsn, "0.1.0"},
+  {registered, []},
+  {applications,
+   [kernel,
+    stdlib,
+    gen_smtp,
+    pushmail
+   ]},
+  {env,[]},
+  {modules, []},
+
+  {contributors, []},
+  {licenses, []},
+  {links, []}
+ ]}.
