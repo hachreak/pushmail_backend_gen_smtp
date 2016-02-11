@@ -25,12 +25,12 @@
 
 -behaviour(pushmail_backend).
 
--export([start/0, start/1, stop/1, send/2]).
+-export([start/0, start/1, stop/1, send/2, wait_reply/1]).
 
 -spec start() ->
   {ok, pushmail:appctx()} | {error: term()}.
 start() ->
-  {ok, ok}.
+  application:get_env(pushmail, backend_gen_smtp).
 
 -spec start(pushmail:appctx()) ->
   {ok, pushmail:appctx()} | {error: term()}.
@@ -44,6 +44,44 @@ stop(_) ->
 %% @doc Send a email (in appctx you can pass parameters)
 -spec send(pushmail:mail(), pushmail:appctx()) ->
   {ok, pushmail:appctx()} | {error, term()}.
-send(Mail, AppCtx) ->
-  error_logger:info_msg("Mail sent: ~p", [Mail]),
+send(#{sender := Sender, receivers := Receivers}=Mail, AppCtx) ->
+  EncodedEmail = encode_body(Mail),
+  gen_smtp:send({Sender, Receivers, EncodedEmail}, AppCtx, wait_reply),
   {ok, AppCtx}.
+
+-spec encode_body(pushmail:mail()) -> binary().
+encode_body(#{sender := Sender, receivers := Receivers, subject := Subject,
+              message := Message}) ->
+  From = {<<"From">>, Sender},
+  To = {<<"To">>, binary_join(Receivers, <<", ">>)},
+  Subject = {<<"Subject">>, Subject},
+  mimemail:encode({<<"text">>, <<"plain">>, [From, To, Subject], [], Message}).
+
+
+-spec binary_join(list(), binary() | string()) -> binary().
+binary_join(Binary, _Separator) when is_binary(Binary) ->
+  Binary;
+binary_join([Head | Tail], Separator) ->
+  list:foldl(fun(Value, Acc) ->
+                 << Acc/binary, Separator/binary, Value/binary >>
+             end, Head, Tail).
+
+-spec wait_reply(
+        {ok, binary()} | {error, atom(), any()} | {exit, any()}) -> ok.
+wait_reply({ok, Receipt}) ->
+  error_report:info_msg("Email succesfully sent: ~p~n", [Receipt]);
+wait_reply({error, Type, Message}) ->
+  error_logger:error_report({
+    {module, pushmail},
+    {plugin, backend_gen_smtp},
+    {error, [
+       {type, Type},
+       {reason, Message}
+    ]}
+  });
+wait_reply({exit, ExitReason}) ->
+  error_logger:error_report({
+    {module, pushmail},
+    {plugin, backend_gen_smtp},
+    {error, ExitReason}
+  }).
