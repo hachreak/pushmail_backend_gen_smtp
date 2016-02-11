@@ -1,5 +1,5 @@
 %%% @author Leonardo Rossi <leonardo.rossi@studenti.unipr.it>
-%%% @copyright (C) 2015 Leonardo Rossi
+%%% @copyright (C) 2016 Leonardo Rossi
 %%%
 %%% This software is free software; you can redistribute it and/or
 %%% modify it under the terms of the GNU General Public License as
