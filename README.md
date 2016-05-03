@@ -12,7 +12,7 @@ To configure for example the plugin to send emails.
 ```erlang
 [
   {pushmail, [
-    {backend, pushmail_backend_gen_smtp}
+    {backend, pushmail_backend_gen_smtp},
     {backend_gen_smtp, [
       {ssl, true},
       {tls, if_available}, % always, never, if_available
