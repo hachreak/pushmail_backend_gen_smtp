@@ -30,7 +30,7 @@
 -spec start() ->
   {ok, pushmail:appctx()} | {error: term()}.
 start() ->
-  {ok, AppCtx} = application:get_env(pushmail, pushmail_backend_gen_smtp),
+  {ok, AppCtx} = application:get_env(pushmail, backend_gen_smtp),
   start(AppCtx).
 
 -spec start(pushmail:appctx()) ->
